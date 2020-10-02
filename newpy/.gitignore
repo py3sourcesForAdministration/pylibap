@@ -1,0 +1,8 @@
+__pycache__
+testprogs
+not-used
+.idea
+.*\.pyc
+.*\.csv
+.*\.dump
+tdli.*
