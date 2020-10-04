@@ -6,9 +6,14 @@
     Homeverzeichnis des Users nach einem Directory mit dem Namen 
     pylibname (zu setzen unter diesem doctext) gesucht. 
 """
-pylibname = 'pylibap'
-##############################################################################
 import os, os.path, sys, re
+pylibname = 'pylibap'
+searches = ['^'+pylibname+'$']
+search   = re.compile('|'.join(searches))
+stype    = 'is_dir' 
+regexExclude = ['^__pycache__$','^\.local$']
+excludes     = re.compile('|'.join(regexExclude))
+##############################################################################
 (prgdir,fname) = os.path.split(os.path.abspath(__file__))
 (prgname,ext) = os.path.splitext(fname)
 globals()['prgname'] = prgname
@@ -35,30 +40,29 @@ if py:
     os.execv( py, args )
 
 ### ----------------------------------------------------
-def search_dirs(top, searches, ignore = re.compile('^$') ):
-  """ Search for dirs matching one of searches, but
-      ignore everything from ignore
+def filepath_search_names(top, stype, search, ignore = re.compile('^$') ):
+  """ Search for files,dir or symlinks in file system. Takes two
+      required parameters and one optional with keyword ignore.
+      1. stype:   one of 'is_file', 'is_dir', 'is_symlink' (required)
+      2. search: a precompiled regex that must be matched (required)
+      3. ignore=precompiled_regex to ignore names         (optonal)
+
+      Returns a generator for file paths matching the search regex
   """     
   try:
     for entry in os.scandir(top):
-      if entry.is_dir():
-#         print(entry.path)
-        if entry.name in searches:
-#          print("-------------- found",entry.name)   
+      if entry.__getattribute__(stype)():
+        if search.match(entry.name):   
           yield entry.path
-        elif not ignore.match(entry.name) :
-          for res in search_dirs(entry.path, searches, ignore): 
+      if entry.is_dir():    
+        if not ignore.match(entry.name) :
+          for res in filepath_search_names(entry.path, stype, search, ignore): 
             yield res
   except OSError as e:
     print(e, file=sys.stderr)
     pass
-
 ### ----------------------------------------------------
-regs = ['^\.','__pycache__', ]
-excludes=re.compile('|'.join(regs))
-#for found in search_dirs(path,[search],excludes):
-#  print(found) 
-#  break
+
 
 ##############################################################################
 def main():
@@ -95,20 +99,24 @@ def main():
   print(prgname, "could not be found")
   dbg.leavesub()
   
+### ----------------------------------------------------
 if __name__ == "__main__":
   import sys
   import os
+### ----------------------------------------------------
   try:
     libdir = os.environ['MYPYLIB']
   except KeyError:
-    for found in search_dirs(path,[pylibname],excludes):
-      print(found) 
+    for found in filepath_search_names(os.environ['HOME'],stype,search,excludes):
       libdir = found
+      if libdir:
+        print("Please set the environment variable MYPYLIB to",libdir)
+        os.environ['MYPYLIB'] = libdir
       break
-  
+    pass 
+
   try:
-    files  = [ os.path.join(libdir, "globaldefs.py"), 
-             ]
+    files  = [ os.path.join(libdir, "globaldefs.py"),]
     for f in (files):
       exec(open(f).read(), globals())
   except KeyError:
