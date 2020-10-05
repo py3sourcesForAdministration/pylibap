@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+""" This file is loaded first for all my progs,
+    it is used to initialize the path and then 
+    initializes the global dbg object
+"""    
 ###### Setup Libdir
 import sys
 import os
