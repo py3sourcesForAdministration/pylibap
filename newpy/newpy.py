@@ -28,7 +28,7 @@ def main():
   """ Main wrapper part for module calls
   """
   dbg.entersub()
-  newpath = os.path.join(os.environ['MYPYSRC'],prgargs.name)
+  newpath = os.path.join(os.environ['MYPYLIB'],'..',prgargs.name)
   try:
     os.mkdir(newpath)
   except:
@@ -55,14 +55,16 @@ if __name__ == "__main__":
   try:
     libdir = os.environ['MYPYLIB']
     files  = [ os.path.join(libdir, "globaldefs.py"),
-               os.path.join(prgdir, prgname+"_usg.py"),
-               os.path.join(prgdir, prgname+"_cfg.py") ]
+               os.path.join(prgdir, prgname+"_cfg.py"), 
+               os.path.join(prgdir, prgname+"_usg.py")]
     for f in (files):
       exec(open(f).read(), globals())
-  except KeyError:
-    print("Please set the environment variable MYPYLIB") ; sys.exit(1)
+  except KeyError as message:
+    raise KeyError(message)
+    sys.exit(1)
   except IOError as e:
-    print("Unable to read: {0} {1}".format(f, e.strerror)) ; sys.exit(1)
+    print("Unable to read: {0} {1}".format(f, e.strerror)) 
+    sys.exit(1)
   except sys.exc_info()[0]:
     if not ( repr(sys.exc_info()[1]) == "SystemExit(0,)" or \
              repr(sys.exc_info()[1]) == "SystemExit(0)" ):     # py3.9 
