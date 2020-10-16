@@ -24,6 +24,7 @@ def filepath_search_names(top, stype, search, ignore = re.compile('^$') ):
   except OSError as e:
     print(e, file=sys.stderr)
     pass
+
 ### ----------------------------------------------------
 def get_latest_python3(args):
 #  from __main__ import dbg 
@@ -47,3 +48,31 @@ def get_latest_python3(args):
       os.execv( py, newargs )
 
   return(py)
+
+### ----------------------------------------------------
+def default_main_init(prgdir,prgname):
+  try:
+    libdir = os.environ['MYPYLIB']
+    if prgdir not in sys.path:
+      sys.path.insert(0, prgdir)
+#    if libdir not in sys.path:
+#      sys.path.insert(0, libdir)
+###### Load my Global Libraries 
+    files  = [ #os.path.join(libdir, "globaldefs.py"),
+               os.path.join(prgdir, prgname+"_usg.py"),
+               os.path.join(prgdir, prgname+"_cfg.py") ]
+    for f in (files):
+      exec(open(f).read(), globals())
+  except KeyError as missing:
+    print("missing key",missing) 
+    sys.exit(1)
+  except IOError as e:
+    print("Unable to read: {0} {1}".format(f, e.strerror)) 
+    sys.exit(1)
+  except sys.exc_info()[0]:
+    if not ( repr(sys.exc_info()[1]) == "SystemExit(0,)" or \
+             repr(sys.exc_info()[1]) == "SystemExit(0)" ):     # py3.9 
+      print("error exit: \"{0}\" in {1}".format(sys.exc_info()[1], f))
+    sys.exit(1)
+  except:  
+    print("Init: Some unknown error in loading file ",f); sys.exit(1)

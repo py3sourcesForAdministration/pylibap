@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-""" Hilfsprogramm zur Suche und zum Start von Python Programmen. 
-    Es ist notwendig, dass der private Bibliothekspad über die
-    Environment Variable MYPYLIB gesetzt ist, andernfalls wird im 
-    Homeverzeichnis des Users nach einem Directory mit dem Namen 
-    pylibname (zu setzen unter diesem doctext) gesucht. 
+""" helper programm to search and start python programs. 
+    selects an available version > 3.6 to run.
+    preference according to the order in 
+      myfile.search.get_latest_python3
+    Also sets the environment variable MYPYLIB  
 """
-import os, os.path, sys, re, pathlib
-(realdir,rname) = os.path.split(pathlib.Path(__file__).resolve())
+import os, os.path, sys
+#(realdir,rname) = os.path.split(pathlib.Path(__file__).resolve())
+(realdir,rname) = os.path.split(os.path.realpath(__file__))
 (calldir,cname) = os.path.split(os.path.abspath(__file__))
 print("called as",cname,"in dir",calldir,"but is",rname,"in",realdir )
 if cname == rname:
@@ -16,40 +17,11 @@ if cname == rname:
 libdir = os.environ['MYPYLIB'] = realdir
 if libdir not in sys.path:
   sys.path.append(0, libdir)
-from DBG.py3dbg import dbg  
-import myfile.search
-# pylibname = 'pylibap'
-# searches = ['^'+pylibname+'$']
-# search   = re.compile('|'.join(searches))
-# stype    = 'is_dir' 
-# regexExclude = ['^__pycache__$','^\.local$']
-#excludes     = re.compile('|'.join(regexExclude))
-##############################################################################
-#(prgdir,fname) = os.path.split(os.path.abspath(__file__))
-(prgname,ext) = os.path.splitext(cname)
-globals()['prgname'] = prgname
-globals()['prgdir']  = calldir
-#### Select python to run with and replace 
-py = myfile.search.get_latest_python3(sys.argv)
-#pythons = [ '/usr/bin/python3.5','/usr/bin/python3.6',
-#            '/usr/bin/python3.8','/usr/bin/python3.9' ]
-#py      = list(filter( os.path.isfile, pythons ))
-## print(__file__)
-#if py:
-#  py = py.pop()
-#  foundpy = int( py[-3:-2] + py[-1:] )
-#  currentpy  = int( ''.join( map(str, sys.version_info[0:2]) ) )
-#  if "--DEBUG" in sys.argv[1:] :
-#      print(str("  DEBUG: Python Version: Current: " + str(currentpy) + \
-#                          ", Available: " + str(foundpy)))
-#  if foundpy > currentpy:
-#    if "--DEBUG" in sys.argv[1:] : 
-#      print("  DEBUG:", __file__ ,"executing with "+py)
-#      print()
-#args = sys.argv
-#args.insert( 0, sys.argv[0] )
-#os.execv( py, args )
 
+(prgname,ext) = os.path.splitext(cname)
+import myfile.search
+py = myfile.search.get_latest_python3(sys.argv)
+from DBG.py3dbg import dbg  
 ##############################################################################
 def main():
 ##### Work on sys.argv 
@@ -62,7 +34,7 @@ def main():
   dbg.entersub()
 ##### Check things
   dbg.dprint(2,"Wanted is",prgname, "called from", __file__ , "with args", prgargs )
-##### Now search for program in Srcdir wait for execution and exit
+##### Now search for program in srcdir wait for execution and exit
   # dbg.dprint(1, "Python Version:",sys.version)
   for top, dirs, files in os.walk(os.path.dirname(libdir)):
     for nm in files:
@@ -85,37 +57,8 @@ def main():
   print(prgname, "could not be found")
   dbg.leavesub()
   
+##############################################################################
 ### ----------------------------------------------------
 if __name__ == "__main__":
-#  import sys
-#  import os
-### ----------------------------------------------------
-#  try:
-#    libdir = os.environ['MYPYLIB']
-#  except KeyError:
-#    for found in filepath_search_names(os.environ['HOME'],stype,search,excludes):
-#      libdir = found
-#      if libdir:
-#        print("Please set the environment variable MYPYLIB to",libdir)
-#        os.environ['MYPYLIB'] = libdir
-#      break
-#    pass 
-
-#  try:
-#    files  = [ os.path.join(libdir, "globaldefs.py"),]
-#    for f in (files):
-#      exec(open(f).read(), globals())
-#  except KeyError:
-#    print("Please set the environment variable MYPYLIB") ; sys.exit(1)
-#  except IOError as e:
-#    print("Unable to read: {0} {1}".format(f, e.strerror)) ; sys.exit(1)
-#  except SystemExit:
-#    sys.exit(1)
-#  except sys.exc_info()[0]:
-#      print("error exit: \"{0}\" in {1}".format(sys.exc_info()[1], f))
-#      sys.exit(1)  
-#  except:
-#    print("Something else") ; sys.exit(1)
-
   main()
 
