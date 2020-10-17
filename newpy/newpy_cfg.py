@@ -2,4 +2,6 @@
 # -*- coding: utf8 -*-
 from datetime import date
 from __main__ import prgdir
-data = {}
+data = {
+  'test' : 1,
+}

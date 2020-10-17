@@ -10,7 +10,8 @@ import os, os.path, sys
 #(realdir,rname) = os.path.split(pathlib.Path(__file__).resolve())
 (realdir,rname) = os.path.split(os.path.realpath(__file__))
 (calldir,cname) = os.path.split(os.path.abspath(__file__))
-print("called as",cname,"in dir",calldir,"but is",rname,"in",realdir )
+if "--DEBUG+" in sys.argv[1:] or "--DEBUG" in sys.argv[1:]:
+  print("DEBUG   : called as",cname,"in dir",calldir,"but is",rname,"in",realdir )
 if cname == rname:
   print("This program is a wrapper and not meant to be called itself !")
   sys.exit(1)
@@ -31,7 +32,6 @@ def main():
     elif "--DEBUG" in sys.argv[1:] :
       dbg.setlvl(+3) 
   globals()['prgargs'] = [ value for value in sys.argv[1:] if not value.startswith('--DEBUG')]
-  dbg.entersub()
 ##### Check things
   dbg.dprint(2,"Wanted is",prgname, "called from", __file__ , "with args", prgargs )
 ##### Now search for program in srcdir wait for execution and exit
@@ -50,12 +50,11 @@ def main():
           dbg.dprint(0,  py,fullname, ' '.join(prgargs[0:]),"\n")   
         p = Popen([py] + [fullname] + prgargs[0:])
         p.wait()
-        dbg.leavesub()
+        #dbg.leavesub()
         return
         
 ##### Nothing found      
   print(prgname, "could not be found")
-  dbg.leavesub()
   
 ##############################################################################
 ### ----------------------------------------------------

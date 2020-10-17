@@ -27,8 +27,9 @@ def filepath_search_names(top, stype, search, ignore = re.compile('^$') ):
 
 ### ----------------------------------------------------
 def get_latest_python3(args):
-#  from __main__ import dbg 
-#  dbg.dprint(0, "Hallo",args)
+  """ function to switch to the highest available python version
+      if needed, but always return the path to found python
+  """
   pythons = [ '/usr/bin/python3.5','/usr/bin/python3.6',
             '/usr/bin/python3.8','/usr/bin/python3.9' ]
   py      = list(filter( os.path.isfile, pythons ))
@@ -36,12 +37,12 @@ def get_latest_python3(args):
     py = py.pop()
     foundpy = int( py[-3:-2] + py[-1:] )
     currentpy  = int( ''.join( map(str, sys.version_info[0:2]) ) )
-    if "--DEBUG" in args[1:] :
-        print(str("  DEBUG: Python Version: Current: " + str(currentpy) + \
+    if "--DEBUG" in args[1:] or "--DEBUG+" in args[1:]:
+        print(str("DEBUG   : Python Version: Current: " + str(currentpy) + \
                             ", Available: " + str(foundpy)))
     if currentpy < 36 and foundpy > currentpy:
-      if "--DEBUG" in sys.argv[1:] : 
-        print("  DEBUG: switching to "+py)
+      if "--DEBUG" in sys.argv[1:] or "--DEBUG+" in args[1:]: 
+        print("DEBUG   : switching to "+py)
         print()
       newargs = args  
       newargs.insert( 0, args[0] )
@@ -51,14 +52,17 @@ def get_latest_python3(args):
 
 ### ----------------------------------------------------
 def default_main_init(prgdir,prgname):
+  """ function to do the initialization if program is called
+      as main
+  """     
   try:
     libdir = os.environ['MYPYLIB']
     if prgdir not in sys.path:
       sys.path.insert(0, prgdir)
-#    if libdir not in sys.path:
-#      sys.path.insert(0, libdir)
-###### Load my Global Libraries 
-    files  = [ #os.path.join(libdir, "globaldefs.py"),
+    if libdir not in sys.path:
+      sys.path.insert(0, libdir)
+    exec(open(os.path.join(prgdir,prgname+'_imp.py')).read())
+    files  = [ 
                os.path.join(prgdir, prgname+"_usg.py"),
                os.path.join(prgdir, prgname+"_cfg.py") ]
     for f in (files):
@@ -76,3 +80,4 @@ def default_main_init(prgdir,prgname):
     sys.exit(1)
   except:  
     print("Init: Some unknown error in loading file ",f); sys.exit(1)
+  print(globals())  
