@@ -3,26 +3,22 @@
 """ Docstring: replace
 """
 import os, os.path, sys
-#### Select python to run with and replace 
-pythons = [ '/usr/bin/python3.5','/usr/bin/python3.6', '/usr/bin/python3.9' ]
-py      = list(filter( os.path.isfile, pythons ))
-# print(py)
-if py:
-  py = py.pop()
-  thepy = int( py[-3:-2] + py[-1:] )
-  mypy  = int( ''.join( map(str, sys.version_info[0:2]) ) )
-  if thepy > mypy:
-    print("moving versions to "+py)
-    args = sys.argv
-    args.insert( 0, sys.argv[0] )
-    os.execv( py, args )
+##### check for minimum python version and MYPYLIB
+if sys.version_info < (3,6):
+  print("python should be at least version 3.6") ; sys.exit(1)  
+if 'MYPYLIB' not in os.environ:
+  print("you need to set os.environ['MYPYLIB']") ; sys.exit(1)
+else:
+  libdir = os.environ['MYPYLIB']
+  if libdir not in sys.path:
+    sys.path.insert(0, libdir) 
+  import myfile.search
 
-############### Normal start of file #########################################
-(prgdir,fname) = os.path.split(os.path.abspath(__file__))
+(prgdir,fname) = os.path.split(os.path.realpath(__file__))
 (prgname,ext) = os.path.splitext(fname)
-globals()['prgname'] = prgname
-globals()['prgdir']  = prgdir
-exec(open(os.path.join(prgdir,prgname+'_imp.py')).read())
+#globals()['prgname'] = prgname
+#globals()['prgdir']  = prgdir
+#exec(open(os.path.join(prgdir,prgname+'_imp.py')).read())
 ###########   M A I N   ######################################################
 def main():
   """ Main wrapper part for module calls
@@ -31,22 +27,6 @@ def main():
   dbg.leavesub()
 ###########   D E F A U L T   I N I T   #######################################
 if __name__ == "__main__":
-  try:
-    libdir = os.environ['MYPYLIB']
-    files  = [ os.path.join(libdir, "globaldefs.py"),
-               os.path.join(prgdir, prgname+"_usg.py"),
-               os.path.join(prgdir, prgname+"_cfg.py") ]
-    for f in (files):
-      exec(open(f).read(), globals())
-  except KeyError:
-    print("Please set the environment variable MYPYLIB") ; sys.exit(1)
-  except IOError as e:
-    print("Unable to read: {0} {1}".format(f, e.strerror)) ; sys.exit(1)
-  except sys.exc_info()[0]:
-    if not ( repr(sys.exc_info()[1]) == "SystemExit(0,)" or \
-             repr(sys.exc_info()[1]) == "SystemExit(0)" ):     # py3.9 
-      print("error exit: \"{0}\" in {1}".format(sys.exc_info()[1], f))
-    sys.exit(1)
-  except:  
-    print("Init: Some unknown error in loading file ",f); sys.exit(1)
+  from DBG.py3dbg import dbg
+  myfile.search.default_main_init(prgdir,prgname)
   main()
